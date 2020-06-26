@@ -1,0 +1,33 @@
+{
+  "name": "discryptor",
+  "version": "1.0.0",
+  "description": "Discord bot that encrypts and decrypts strings of text",
+  "main": "index.js",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "discord.js": "^12.2.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/garrettsummerfi3ld/discryptor.git"
+  },
+  "keywords": [
+    "discord",
+    "bot",
+    "discord.js"
+  ],
+  "author": {
+    "name": "Garrett Summerfield",
+    "email": "garrettsummerfi3ld@gmail.com",
+    "url": "https://garrettsummerfi3ld.io",
+    "license": "ISC",
+    "bugs": {
+      "url": "https://github.com/garrettsummerfi3ld/discryptor/issues"
+    },
+    "homepage": "https://github.com/garrettsummerfi3ld/discryptor#readme"
+  }
+}
