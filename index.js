@@ -1,7 +1,8 @@
 require('dotenv').config();
 
+const config = require('./config.json');
 const Discord = require('discord.js');
-const { type } = require('os');
+const crypto = require('crypto-js');
 const client = new Discord.Client();
 
 client.on('ready', () => {
@@ -15,11 +16,40 @@ client.on('ready', () => {
 	});
 });
 
+function getUserFromMention(mention) {
+	if (!mention) return;
+
+	if (mention.startsWith('<@') && mention.endsWith('>')) {
+		mention = mention.slice(2, -1);
+
+		if (mention.startsWith('!')) {
+			mention = mention.slice(1);
+		}
+
+		return client.users.cache.get(mention);
+	}
+}
 
 client.on('message', msg => {
-	if (msg.content === '$ping') {
-		msg.reply('Pong!');
+	if (!msg.content.startsWith(config.prefix)) return;
+
+	const withoutPrefix = msg.content.slice(config.prefix.length);
+	const split = withoutPrefix.split(/ +/);
+	const command = split[0];
+	const args = split.slice(1);
+	if (command === 'help') {
+		const embed = new Discord.MessageEmbed()
+			.setAuthor('discryptor', 'https://github.com/garrettsummerfi3ld/discryptor')
+			.setTitle('discryptor Help Page')
+			.setColor('#600fbd')
+			.setDescription('All the commands and functions of the bot')
+			.setURL('https://https://github.com/garrettsummerfi3ld/discryptor')
+			.addField('Under construction!', 'Check in on the GitHub repo for more updates!', true)
+			.setTimestamp();
+
+		Discord.Channel.send(embed);
 	}
 });
+
 
 client.login(process.env.TOKEN);
