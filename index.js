@@ -47,7 +47,7 @@ client.on('message', msg => {
 			.addField('Under construction!', 'Check in on the GitHub repo for more updates!', true)
 			.setTimestamp();
 
-		Discord.Channel.send(embed);
+		Discord.Channel.send(embed); // maybe : msg.channel.send(embed);
 	}
 });
 
