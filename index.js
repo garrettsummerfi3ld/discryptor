@@ -37,19 +37,18 @@ client.on('message', msg => {
 	const split = withoutPrefix.split(/ +/);
 	const command = split[0];
 	const args = split.slice(1);
-	if (command === 'help') {
-		const embed = new Discord.MessageEmbed()
-			.setAuthor('discryptor', 'https://github.com/garrettsummerfi3ld/discryptor')
-			.setTitle('discryptor Help Page')
-			.setColor('#600fbd')
-			.setDescription('All the commands and functions of the bot')
-			.setURL('https://https://github.com/garrettsummerfi3ld/discryptor')
-			.addField('Under construction!', 'Check in on the GitHub repo for more updates!', true)
-			.setTimestamp();
 
-		Discord.Channel.send(embed); // maybe : msg.channel.send(embed);
+	if (command === 'help') {
+		let embed = new Discord.MessageEmbed()
+			.setAuthor('discryptor', '', 'https://github.com/garrettsummerfi3ld/discryptor')
+			.setTitle('Help')
+			.setColor("#600fbd")
+			.setDescription('All the commands and functions of the bot')
+			.addField('Under construction!', 'Check in on the GitHub repo for more updates!', true)
+			.setTimestamp()
+
+		msg.channel.send(embed);
 	}
 });
 
 
-client.login(process.env.TOKEN);
