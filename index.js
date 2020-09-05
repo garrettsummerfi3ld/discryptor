@@ -10,7 +10,7 @@ console.log('Loaded modules');
 
 // Vars
 const today = new Date();
-const date = today.getFullYear() + '-' + (today.getMonth()+1) + '-' + today.getDate();
+const date = today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate();
 const time = today.getHours() + ':' + today.getMinutes() + ':' + today.getSeconds();
 const dateTime = date + ' ' + time;
 
@@ -88,7 +88,45 @@ client.on('message', msg => {
 
 				return msg.channel.send({ embed: embed });
 			}
-			else if (string == null || string == "") {
+			else if (string == null || string == '') {
+				console.log('"string" var is empty or null');
+				const embed = new Discord.MessageEmbed()
+					.setAuthor('discryptor', '', 'https://github.com/garrettsummerfi3ld/discryptor')
+					.setTitle('Encrypt')
+					.setColor('#802019')
+					.setDescription('MD5 Encryption page')
+					.addField('Arguments', 'All the arguments needed for this function', true)
+					.addField('')
+					.setTimestamp();
+
+				console.log('Returning error log');
+
+				return msg.channel.send({ embed: embed });
+			}
+		}
+
+		if (args[0] === 'aes') {
+			console.log('Caught "aes" arg');
+			const string = args[1];
+			const pass = args[2];
+
+			if (string != null || string != '') {
+				console.log('"string" var is not empty or null');
+				const cipherText = crypto.AES.encrypt(string, pass);
+
+				const embed = new Discord.MessageEmbed()
+					.setAuthor('discryptor', '', 'https://github.com/garrettsummerfi3ld/discryptor')
+					.setTitle('Encrypt')
+					.setColor('#600fbd')
+					.setDescription('AES Encryption')
+					.addField('Encrypted AES string', cipherText, true)
+					.setTimestamp();
+
+				console.log('Returning MD5 embed');
+
+				return msg.channel.send({ embed: embed });
+			}
+			else if (string == null || string == '') {
 				console.log('"string" var is empty or null');
 				const embed = new Discord.MessageEmbed()
 					.setAuthor('discryptor', '', 'https://github.com/garrettsummerfi3ld/discryptor')
