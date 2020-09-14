@@ -10,7 +10,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node index.js"
+    "test": "npm run lint && npm run lint",
+    "lint": "eslint *.js",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
