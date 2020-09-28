@@ -6,6 +6,24 @@ const config = require('./config.json');
 const Discord = require('discord.js');
 const crypto = require('crypto-js');
 const client = new Discord.Client();
+const chalk = require('chalk');
+const winston = require('winston');
+const moment = require('moment');
+
+const logger = winston.createLogger({
+    transports: [
+        new winston.transports.Console(),
+        new winston.transports.File({ filename: './logs/discryptor.log' }),
+    ],
+    format: winston.format.printf(log => `[${log.level.toUpperCase()}] - ${log.message}`),
+});
+
+client.on('debug', m => logger.log('debug', m));
+client.on('warn', m => logger.log('warn', m));
+client.on('error', m => logger.log('error', m));
+
+process.on('uncaughtException', error => logger.log('error', error));
+
 console.log('[' + new Date().toUTCString() + '] Loaded modules');
 
 // Default embed
@@ -38,6 +56,10 @@ client.on('ready', async () => {
 
 client.login(process.env.TOKEN);
 
+client.on('debug', m => logger.log('debug', m));
+client.on('warn', m => logger.log('warn', m));
+client.on('error', m => logger.log('error', m));
+
 client.on('message', async msg => {
     try {
         if (!msg.content.startsWith(config.prefix) || msg.author.bot) return;
@@ -69,26 +91,23 @@ client.on('message', async msg => {
                 { name: '\u200b', value: '\u200b', inline: false },
                 { name: 'GitHub page', value: 'https://github.com/garrettsummerfi3ld/discryptor', inline: true },
             ];
-
             return msg.reply({ embed: embed });
         }
 
         // Encrypt
         if (cmd === 'encrypt') {
             console.log('[' + new Date().toUTCString() + '] Caught "$encrypt" cmd');
-
             embed.title = 'Encrypt';
 
+            // Error string if nothing is provided
             if (!args.length) {
                 console.log('[' + new Date().toUTCString() + '] No args found!');
-
                 embed.description = 'Encrypt a string of text';
                 embed.fields = [
                     { name: 'Error', value: 'No other arguments provided!', inline: true },
                     { name: 'Supported methods of encryption/hashing', value: '`MD5`, `AES`, `SHA1`', inline: false },
                 ];
-
-                console.log('[' + new Date().toUTCString() + '] Returning error embed');
+                console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
                 return msg.reply({ embed: embed });
             }
 
@@ -98,32 +117,26 @@ client.on('message', async msg => {
                 embed.description = 'MD5 Encryption';
                 const string = args[1];
 
+                // Parsing string
                 if (string != null || string != '') {
                     console.log('[' + new Date().toUTCString() + '] "string" var is not empty or null');
-
                     const cipherText = crypto.MD5(string);
-
                     embed.color = 0x600fdb;
                     embed.fields = [
                         { name: 'Encrypted MD5 string', value: '`' + cipherText + '`', inline: true },
                     ];
-
                     console.log('[' + new Date().toUTCString() + '] Returning MD5 embed');
-
                     return msg.reply({ embed: embed });
                 }
-
+                // Error string if nothing is provided
                 else if (string == null || string == '') {
                     console.log('[' + new Date().toUTCString() + '] "string" var is empty or null');
-
                     embed.color = 0x802019;
                     embed.fields = [
                         { name: 'Arguments', value: 'All the arguments needed for this function', inline: true },
                         { name: '`md5 [message]`', value: 'Hash message using MD5', inline: true },
                     ];
-
                     console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
-
                     return msg.reply({ embed: embed });
                 }
             }
@@ -131,37 +144,29 @@ client.on('message', async msg => {
             // AES
             if (args[0] === 'aes') {
                 console.log('[' + new Date().toUTCString() + '] Caught "aes" arg');
-
                 embed.description = 'AES Encryption';
-
                 const string = args[1];
                 const pass = args[2];
 
+                // Parsing string and encrypting with password
                 if (string != null || string != '' || pass != null || pass != '') {
                     console.log('[' + new Date().toUTCString() + '] "string" var is not empty or null');
-
                     const cipherText = crypto.AES.encrypt(string, pass);
-
                     embed.color = 0x600fbd;
                     embed.fields = [
                         { name: 'Encrypted AES string', value: '`' + cipherText + '`', inline: true },
                     ];
-
                     console.log('[' + new Date().toUTCString() + '] Returning AES embed');
-
                     return msg.reply({ embed: embed });
                 }
-
+                // Error string if nothing is provided
                 else if (string == null || string == '' || pass == null || pass == '') {
                     console.log('[' + new Date().toUTCString() + '] "string" var is empty or null');
-
                     embed.color = 0x802019;
                     embed.fields = [
                         { name: 'Error', value: 'No string to encrypt provided!', inline: true },
                     ];
-
                     console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
-
                     return msg.reply({ embed: embed });
                 }
             }
@@ -169,37 +174,42 @@ client.on('message', async msg => {
             // SHA1
             if (args[0] === 'sha1') {
                 console.log('[' + new Date().toUTCString() + '] Caught "sha1" arg');
-
                 embed.description = 'SHA1 Encryption';
-
                 const string = args[1];
 
+                // Parsing string
                 if (string != null || string != '') {
                     console.log('[' + new Date().toUTCString() + '] "string" var is not empty or null');
                     const cipherText = crypto.SHA1(string);
-
                     embed.color = 0x600fbd;
                     embed.fields = [
                         { name: 'Encrypted SHA1 string', value: '`' + cipherText + '`', inline: true },
                     ];
-
                     console.log('[' + new Date().toUTCString() + '] Returning SHA1 embed');
-
                     return msg.reply({ embed: embed });
                 }
-
+                // Error string if nothing is provided
                 else if (string == null || string == '') {
                     console.log('[' + new Date().toUTCString() + '] "string" var is empty or null');
-
                     embed.color = 0x802019;
                     embed.fields = [
                         { name: 'Arguments', value: 'All the arguments needed for this function', inline: true },
                         { name: '`sha1 [message]`', value: 'Hash message using SHA1', inline: true },
                     ];
-
                     console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
-
                     return msg.reply({ embed: embed });
+                }
+            }
+
+            // Base64
+            if (args[0] === 'base64') {
+                console.log('[' + new Date().toUTCString() + '] Caught "sha1" arg');
+                embed.description = 'Base64 Description';
+
+                const string = args[1];
+
+                // Parsing string
+                if (string != null || string != '') {
                 }
             }
         }
@@ -207,17 +217,17 @@ client.on('message', async msg => {
         // Decrypt
         if (cmd === 'decrypt') {
             console.log('[' + new Date().toUTCString() + '] Caught "$decrypt" cmd');
-
             embed.title = 'Decrypt';
 
+            // Error string if nothing is provided
             if (!args.length) {
-                embed.color = 0x802019;
+                console.log('[' + new Date().toUTCString() + '] No args found!');
+                embed.description = 'Decrypting a string of text';
                 embed.fields = [
-                    { name: 'Arguments', value: 'No other arguments provided!', inline: true },
+                    { name: 'Error', value: 'No other arguments provided!', inline: true },
+                    { name: 'Supported methods of decryption', value: '`MD5`, `AES`, `SHA1`', inline: false },
                 ];
-
-                console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
-
+                console.log('[' + new Date().toUTCString() + '] Returning error embed');
                 return msg.reply({ embed: embed });
             }
         }
@@ -228,3 +238,5 @@ client.on('message', async msg => {
         console.error(e);
     }
 });
+
+process.on('uncaughtException', error => logger.log('error', error));
