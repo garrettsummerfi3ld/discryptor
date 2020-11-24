@@ -1,30 +1,47 @@
 // Environment variables (bot tokens, CI, etc)
 require('dotenv').config();
 
-console.log('[' + new Date().toUTCString() + '] Loading modules...');
-const config = require('./config.json');
 const Discord = require('discord.js');
+const config = require('./config.json');
+const fs = require('fs');
 const crypto = require('crypto-js');
-const client = new Discord.Client();
 const chalk = require('chalk');
 const winston = require('winston');
 const moment = require('moment');
+const client = new Discord.Client();
+
 
 const logger = winston.createLogger({
     transports: [
         new winston.transports.Console(),
-        new winston.transports.File({ filename: './logs/discryptor.log' }),
+        new winston.transports.File({
+            filename: './logs/discryptor.log',
+            level: config.logLevel,
+            prettyPrint: true,
+        }),
     ],
-    format: winston.format.printf(log => `[${log.level.toUpperCase()}] - ${log.message}`),
+    format: winston.format.printf(log => `[${moment()}] - [${log.level.toUpperCase()}] - ${log.message}`),
 });
+
+logger.info('Loading modules...');
 
 client.on('debug', m => logger.log('debug', m));
 client.on('warn', m => logger.log('warn', m));
 client.on('error', m => logger.log('error', m));
 
 process.on('uncaughtException', error => logger.log('error', error));
+try {
+    if (process.env.TOKEN == '' || fs.existsSync('.env')) {
+        logger.debug('Environment variable exists');
+    }
+}
+catch (e) {
+    logger.warn('UNKNOWN ERROR, PRINTING STACKTRACE');
+    logger.warn('REPORT THIS TO GITHUB REPO: https://github.com/garrettsummerfi3ld/discryptor/issues');
+    logger.warn(e);
+}
 
-console.log('[' + new Date().toUTCString() + '] Loaded modules');
+logger.info('Loaded modules');
 
 // Default embed
 const embed = {
@@ -41,24 +58,19 @@ const embed = {
 };
 
 // Login process with Discord
-console.log('[' + new Date().toUTCString() + '] Starting up...');
+logger.info('Starting up...');
 client.on('ready', async () => {
-    console.log('       ___                            __\r\n  ____/ (_)________________  ______  / /_____  _____\r\n / __  / / ___/ ___/ ___/ / / / __ \\/ __/ __ \\/ ___/\r\n/ /_/ / (__  ) /__/ /  / /_/ / /_/ / /_/ /_/ / /\r\n\\__,_/_/____/\\___/_/   \\__, / .___/\\__/\\____/_/\r\n                      /____/_/');
-    console.log('[' + new Date().toUTCString() + '] ' + `Logged in as ${client.user.tag}!`);
+    logger.info(`Logged in as ${client.user.tag}!`);
     client.user.setPresence({
         status: 'online',
         activity: {
             name: 'with numbers',
         },
     });
-    console.log('[' + new Date().toUTCString() + '] Done loading!');
+    logger.info('Done loading!');
 });
 
 client.login(process.env.TOKEN);
-
-client.on('debug', m => logger.log('debug', m));
-client.on('warn', m => logger.log('warn', m));
-client.on('error', m => logger.log('error', m));
 
 client.on('message', async msg => {
     try {
@@ -69,7 +81,7 @@ client.on('message', async msg => {
 
         // Help page
         if (cmd === 'help') {
-            console.log('[' + new Date().toUTCString() + '] Caught "$help" cmd');
+            logger.debug('Caught "$help" cmd');
             embed.title = 'Help';
             embed.description = 'All the commands and functions of the bot';
             embed.fields = [
@@ -84,7 +96,7 @@ client.on('message', async msg => {
 
         // About page
         if (cmd === 'about') {
-            console.log('[' + new Date().toUTCString() + '] Caught "$about" cmd');
+            logger.debug('Caught "$about" cmd');
             embed.title = 'About the bot';
             embed.fields = [
                 { name: 'unlucky dem0n#0001', value: 'Creator of the bot', inline: true },
@@ -96,147 +108,144 @@ client.on('message', async msg => {
 
         // Encrypt
         if (cmd === 'encrypt') {
-            console.log('[' + new Date().toUTCString() + '] Caught "$encrypt" cmd');
+            logger.debug('Caught "$encrypt" cmd');
             embed.title = 'Encrypt';
-
             // Error string if nothing is provided
             if (!args.length) {
-                console.log('[' + new Date().toUTCString() + '] No args found!');
+                logger.debug('No args found!');
                 embed.description = 'Encrypt a string of text';
                 embed.fields = [
                     { name: 'Error', value: 'No other arguments provided!', inline: true },
                     { name: 'Supported methods of encryption/hashing', value: '`MD5`, `AES`, `SHA1`', inline: false },
                 ];
-                console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
+                logger.debug('Returning error embed to user');
                 return msg.reply({ embed: embed });
             }
 
             // MD5
             if (args[0] === 'md5') {
-                console.log('[' + new Date().toUTCString() + '] Caught "md5" arg');
+                logger.debug('Caught "md5" arg');
                 embed.description = 'MD5 Encryption';
                 const string = args[1];
 
                 // Parsing string
+
                 if (string != null || string != '') {
-                    console.log('[' + new Date().toUTCString() + '] "string" var is not empty or null');
+                    logger.debug('"string" var is not empty or null');
                     const cipherText = crypto.MD5(string);
                     embed.color = 0x600fdb;
                     embed.fields = [
                         { name: 'Encrypted MD5 string', value: '`' + cipherText + '`', inline: true },
                     ];
-                    console.log('[' + new Date().toUTCString() + '] Returning MD5 embed');
+                    logger.debug('Returning MD5 embed');
                     return msg.reply({ embed: embed });
                 }
                 // Error string if nothing is provided
                 else if (string == null || string == '') {
-                    console.log('[' + new Date().toUTCString() + '] "string" var is empty or null');
+                    logger.debug('"string" var is empty or null');
                     embed.color = 0x802019;
                     embed.fields = [
                         { name: 'Arguments', value: 'All the arguments needed for this function', inline: true },
                         { name: '`md5 [message]`', value: 'Hash message using MD5', inline: true },
                     ];
-                    console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
+                    logger.debug('Returning error embed to user');
                     return msg.reply({ embed: embed });
                 }
             }
 
             // AES
             if (args[0] === 'aes') {
-                console.log('[' + new Date().toUTCString() + '] Caught "aes" arg');
+                logger.debug('Caught "aes" arg');
                 embed.description = 'AES Encryption';
                 const string = args[1];
                 const pass = args[2];
 
                 // Parsing string and encrypting with password
+
                 if (string != null || string != '' || pass != null || pass != '') {
-                    console.log('[' + new Date().toUTCString() + '] "string" var is not empty or null');
+                    logger.debug('"string" var is not empty or null');
                     const cipherText = crypto.AES.encrypt(string, pass);
                     embed.color = 0x600fbd;
                     embed.fields = [
                         { name: 'Encrypted AES string', value: '`' + cipherText + '`', inline: true },
                     ];
-                    console.log('[' + new Date().toUTCString() + '] Returning AES embed');
+                    logger.debug('Returning AES embed');
                     return msg.reply({ embed: embed });
                 }
                 // Error string if nothing is provided
                 else if (string == null || string == '' || pass == null || pass == '') {
-                    console.log('[' + new Date().toUTCString() + '] "string" var is empty or null');
+                    logger.debug('"string" var is empty or null');
                     embed.color = 0x802019;
                     embed.fields = [
                         { name: 'Error', value: 'No string to encrypt provided!', inline: true },
                     ];
-                    console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
+                    logger.debug('Returning error embed to user');
                     return msg.reply({ embed: embed });
                 }
             }
 
             // SHA1
             if (args[0] === 'sha1') {
-                console.log('[' + new Date().toUTCString() + '] Caught "sha1" arg');
+                logger.debug('Caught "sha1" arg');
                 embed.description = 'SHA1 Encryption';
                 const string = args[1];
-
                 // Parsing string
                 if (string != null || string != '') {
-                    console.log('[' + new Date().toUTCString() + '] "string" var is not empty or null');
+                    logger.debug('"string" var is not empty or null');
                     const cipherText = crypto.SHA1(string);
                     embed.color = 0x600fbd;
                     embed.fields = [
                         { name: 'Encrypted SHA1 string', value: '`' + cipherText + '`', inline: true },
                     ];
-                    console.log('[' + new Date().toUTCString() + '] Returning SHA1 embed');
+                    logger.debug('Returning SHA1 embed');
                     return msg.reply({ embed: embed });
                 }
                 // Error string if nothing is provided
                 else if (string == null || string == '') {
-                    console.log('[' + new Date().toUTCString() + '] "string" var is empty or null');
+                    logger.debug('"string" var is empty or null');
                     embed.color = 0x802019;
                     embed.fields = [
                         { name: 'Arguments', value: 'All the arguments needed for this function', inline: true },
                         { name: '`sha1 [message]`', value: 'Hash message using SHA1', inline: true },
                     ];
-                    console.log('[' + new Date().toUTCString() + '] Returning error embed to user');
+                    logger.debug('Returning error embed to user');
                     return msg.reply({ embed: embed });
                 }
             }
 
             // Base64
             if (args[0] === 'base64') {
-                console.log('[' + new Date().toUTCString() + '] Caught "sha1" arg');
+                logger.debug('Caught "sha1" arg');
                 embed.description = 'Base64 Description';
 
                 const string = args[1];
 
                 // Parsing string
-                if (string != null || string != '') {
-                }
+                if (string != null || string != '') {}
             }
         }
 
         // Decrypt
         if (cmd === 'decrypt') {
-            console.log('[' + new Date().toUTCString() + '] Caught "$decrypt" cmd');
+            logger.debug('Caught "$decrypt" cmd');
             embed.title = 'Decrypt';
-
             // Error string if nothing is provided
-            if (!args.length) {
-                console.log('[' + new Date().toUTCString() + '] No args found!');
-                embed.description = 'Decrypting a string of text';
-                embed.fields = [
-                    { name: 'Error', value: 'No other arguments provided!', inline: true },
-                    { name: 'Supported methods of decryption', value: '`MD5`, `AES`, `SHA1`', inline: false },
-                ];
-                console.log('[' + new Date().toUTCString() + '] Returning error embed');
-                return msg.reply({ embed: embed });
-            }
+            logger.debug('No args found!');
+            embed.description = 'Decrypting a string of text';
+            embed.fields = [
+                { name: 'Error', value: 'No other arguments provided!', inline: true },
+                { name: 'Supported methods of decryption', value: '`MD5`, `AES`, `SHA1`', inline: false },
+            ];
+            logger.debug('Returning error embed to user');
+            return msg.reply({ embed: embed });
         }
     }
     catch (e) {
-        console.error('[' + new Date().toUTCString() + '] UNKNOWN ERROR, PRINTING STACKTRACE');
-        console.error('[' + new Date().toUTCString() + '] REPORT THIS TO GITHUB REPO: https://github.com/garrettsummerfi3ld/discryptor/issues');
-        console.error(e);
+        logger.warn('UNKNOWN ERROR, PRINTING STACKTRACE');
+        logger.warn('REPORT THIS TO GITHUB REPO: https://github.com/garrettsummerfi3ld/discryptor/issues');
+        logger.warn(e);
     }
+
 });
 
 process.on('uncaughtException', error => logger.log('error', error));
