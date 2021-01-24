@@ -72,6 +72,46 @@ client.on('ready', async () => {
 
 client.login(process.env.TOKEN);
 
+// Embed returns
+function returns(args, err){
+    if (args == "general") {
+        logger.debug('Caught "$help" cmd');
+        embed.title = 'Help';
+        embed.description = 'All the commands and functions of the bot';
+        embed.fields = [
+            { name: '`$help`', value: 'This help page', inline: false },
+            { name: '`$about`', value: 'Credits to who made the bot', inline: false },
+            { name: '`$encrypt`', value: 'Encrypts with a given string with a specified hash/cipher', inline: false },
+            { name: '`$decrypt`', value: 'Decrypts with a given string with a specified hash/cipher', inline: false },
+        ];
+    }
+
+    if (args == "about") {
+        logger.debug('Caught "$about" cmd');
+        embed.title = 'About the bot';
+        embed.fields = [
+            { name: 'unlucky dem0n#0001', value: 'Creator of the bot', inline: true },
+            { name: '\u200b', value: '\u200b', inline: false },
+            { name: 'GitHub page', value: 'https://github.com/garrettsummerfi3ld/discryptor', inline: true },
+        ];
+    }
+
+    if (args == "error") {
+        embed.color = 0x802019;
+        logger.error('Caught an error!');
+        if (err == "nostring") {
+            logger.debug('"string" var is empty or null');
+            embed.fields = [
+                { name: 'Error', value: 'No string to encrypt provided!', inline: true },
+            ];
+            logger.debug('Returning error embed to user');
+        }
+    }
+
+    return msg.reply({ embed: embed });
+}
+
+// Logic for messages
 client.on('message', async msg => {
     try {
         if (!msg.content.startsWith(config.prefix) || msg.author.bot) return;
@@ -81,29 +121,12 @@ client.on('message', async msg => {
 
         // Help page
         if (cmd === 'help') {
-            logger.debug('Caught "$help" cmd');
-            embed.title = 'Help';
-            embed.description = 'All the commands and functions of the bot';
-            embed.fields = [
-                { name: '`$help`', value: 'This help page', inline: false },
-                { name: '`$about`', value: 'Credits to who made the bot', inline: false },
-                { name: '`$encrypt`', value: 'Encrypts with a given string with a specified hash/cipher', inline: false },
-                { name: '`$decrypt`', value: 'Decrypts with a given string with a specified hash/cipher', inline: false },
-            ];
-
-            return msg.reply({ embed: embed });
+            returns("general","");
         }
 
         // About page
         if (cmd === 'about') {
-            logger.debug('Caught "$about" cmd');
-            embed.title = 'About the bot';
-            embed.fields = [
-                { name: 'unlucky dem0n#0001', value: 'Creator of the bot', inline: true },
-                { name: '\u200b', value: '\u200b', inline: false },
-                { name: 'GitHub page', value: 'https://github.com/garrettsummerfi3ld/discryptor', inline: true },
-            ];
-            return msg.reply({ embed: embed });
+            returns("about","");
         }
 
         // Encrypt
@@ -129,7 +152,6 @@ client.on('message', async msg => {
                 const string = args[1];
 
                 // Parsing string
-
                 if (string != null || string != '') {
                     logger.debug('"string" var is not empty or null');
                     const cipherText = crypto.MD5(string);
@@ -161,7 +183,6 @@ client.on('message', async msg => {
                 const pass = args[2];
 
                 // Parsing string and encrypting with password
-
                 if (string != null || string != '' || pass != null || pass != '') {
                     logger.debug('"string" var is not empty or null');
                     const cipherText = crypto.AES.encrypt(string, pass);
@@ -247,5 +268,3 @@ client.on('message', async msg => {
     }
 
 });
-
-process.on('uncaughtException', error => logger.log('error', error));
